@@ -24,19 +24,25 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  
-  // Check if user is logged in on component mount
+
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        setCurrentUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Error parsing stored user data:', error);
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        const userData = {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName
+        };
+        localStorage.setItem('user', JSON.stringify(userData));
+        setCurrentUser(userData);
+      } else {
         localStorage.removeItem('user');
+        setCurrentUser(null);
       }
-    }
-    setLoading(false);
+      setLoading(false);
+    });
+
+    return unsubscribe;
   }, []);
   
   // Login function (original)
@@ -50,7 +56,7 @@ export const AuthProvider = ({ children }) => {
       nome: 'João Silva',
       email: email,
       matricula: 'MAT12345',
-      cargo: 'Analista Administrativo',
+      cargo: 'Analista de TI',
       perfil: 'servidor'
     };
     
@@ -70,9 +76,9 @@ export const AuthProvider = ({ children }) => {
         id: user.uid,
         nome: user.displayName,
         email: user.email,
-        matricula: 'MAT12345', // Substitua por dados reais do backend, se necessário
-        cargo: 'Analista Administrativo', // Substitua por dados reais do backend, se necessário
-        perfil: 'servidor' // Substitua por dados reais do backend, se necessário
+        matricula: user.email, // Substitua por dados reais do backend, se necessário
+        cargo: user.cargo, // Substitua por dados reais do backend, se necessário
+        perfil: user.profile // Substitua por dados reais do backend, se necessário
       };
       
       localStorage.setItem('user', JSON.stringify(userData));
