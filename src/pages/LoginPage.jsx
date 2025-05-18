@@ -7,10 +7,11 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
   const [message, setMessage] = useState('');
   
-  const { login, forgotPassword } = useAuth();
+  const { login, forgotPassword, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   
   const handleSubmit = async (e) => {
@@ -48,6 +49,18 @@ const LoginPage = () => {
     } catch (err) {
       setError('Credenciais inválidas. Tente novamente.');
       setLoading(false);
+    }
+  };
+  
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    setError('');
+    try {
+      await loginWithGoogle();
+      navigate('/dashboard');
+    } catch (err) {
+      setError('Erro ao fazer login com Google. Tente novamente.');
+      setGoogleLoading(false);
     }
   };
   
@@ -126,17 +139,37 @@ const LoginPage = () => {
                 {loading ? 'Processando...' : forgotPasswordMode ? 'Enviar E-mail de Recuperação' : 'Entrar'}
               </button>
             </div>
-            
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={toggleForgotPassword}
-                className="text-blue-700 text-sm hover:text-blue-800"
-              >
-                {forgotPasswordMode ? 'Voltar para o Login' : 'Esqueceu sua senha?'}
-              </button>
-            </div>
           </form>
+          
+          <div className="mt-4 text-center text-gray-600">
+            Ou faça login com:
+          </div>
+          <div className="mt-2">
+            <button
+              onClick={handleGoogleLogin}
+              disabled={googleLoading}
+              className={`w-full py-2 px-4 rounded flex items-center justify-center ${googleLoading ? 'opacity-50 cursor-not-allowed bg-gray-300' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'}`}
+            >
+              {googleLoading ? (
+                'Conectando...'
+              ) : (
+                <>
+                  <img src="/google-logo.svg" alt="Google" className="w-5 h-5 mr-2" />
+                  Login com Google
+                </>
+              )}
+            </button>
+          </div>
+          
+          <div className="text-center mt-4">
+            <button
+              type="button"
+              onClick={toggleForgotPassword}
+              className="text-blue-700 text-sm hover:text-blue-800"
+            >
+              {forgotPasswordMode ? 'Voltar para o Login' : 'Esqueceu sua senha?'}
+            </button>
+          </div>
           
           <div className="mt-8 pt-6 border-t border-gray-200 text-center text-gray-600 text-xs">
             <p>© 2025 Sistema de Cálculo de Pontuação para Progressão Funcional</p>
